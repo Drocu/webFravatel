@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graficos de los Gateway</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Grafico en tiempo real de los operadores</h1>
+
+    <div>
+        <canvas id="chartClaro"></canvas>
+    </div>
+    <div>
+        <canvas id="chartMovistar"></canvas>
+    </div>
+    <div>
+        <canvas id="chartEntel"></canvas>
+    </div>
+    <div>
+        <canvas id="chartBitel"></canvas>
+    </div>
+
+
+    <script>
+        async function fetchData(gateway) {
+            const response = await fetch(`/data/${gateway}`);
+            const data = await response.json();
+            return{
+                labels: data.labels,
+                values: data.values
+            };
+        }
+
+        async function renderChart(canvasId, gateway) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            const data = await fetchData(gateway);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: `Gateway: ${gateway}`,
+                        data: data.values,
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(255, 99, 132, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(255, 99, 132, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtzero: true
+                        }
+                    }
+                }
+            });
+            // Renderizar la grafica inicialmente
+            renderChart(chart, gateway)
+
+            // Actualizar la grafica cada 10 minutos (600000 ms)
+            setInterval(()=> renderChart(chart, gateway), 600000);
+        }
+
+        // Renderizar los graficos para cada gateway
+        renderChart(chartClaro, 'Claro_OUT');
+        renderChart(chartMovistar, 'Movistar_OUT');
+        renderChart(chartEntel, 'Entel_OUT');
+        renderChart(chartBitel, 'Bitel_OUT');
+    </script>
+</body>
+</html>
